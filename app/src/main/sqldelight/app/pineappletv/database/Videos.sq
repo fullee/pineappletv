@@ -1,0 +1,50 @@
+-- 视频表
+CREATE TABLE Videos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    collection_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    file_path TEXT NOT NULL UNIQUE,
+    cover_image TEXT,
+    duration INTEGER DEFAULT 0,
+    file_size INTEGER DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    FOREIGN KEY (collection_id) REFERENCES Collections(id) ON DELETE CASCADE
+);
+
+-- 插入视频
+insertVideo:
+INSERT INTO Videos (collection_id, name, file_path, cover_image, duration, file_size, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+-- 获取合集中的所有视频
+getVideosByCollectionId:
+SELECT * FROM Videos WHERE collection_id = ? ORDER BY name ASC;
+
+-- 根据ID获取视频
+getVideoById:
+SELECT * FROM Videos WHERE id = ?;
+
+-- 根据文件路径获取视频
+getVideoByPath:
+SELECT * FROM Videos WHERE file_path = ?;
+
+-- 搜索视频
+searchVideos:
+SELECT v.*, c.name AS collection_name 
+FROM Videos v 
+JOIN Collections c ON v.collection_id = c.id 
+WHERE v.name LIKE '%' || ? || '%' 
+ORDER BY v.name ASC;
+
+-- 更新视频信息
+updateVideo:
+UPDATE Videos SET name = ?, cover_image = ?, duration = ?, file_size = ?, updated_at = ? WHERE id = ?;
+
+-- 删除视频
+deleteVideo:
+DELETE FROM Videos WHERE id = ?;
+
+-- 删除合集中的所有视频
+deleteVideosByCollectionId:
+DELETE FROM Videos WHERE collection_id = ?;

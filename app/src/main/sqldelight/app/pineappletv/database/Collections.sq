@@ -1,0 +1,34 @@
+-- 合集表
+CREATE TABLE Collections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    path TEXT NOT NULL UNIQUE,
+    cover_image TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+-- 插入合集
+insertCollection:
+INSERT INTO Collections (name, path, cover_image, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?);
+
+-- 获取所有合集
+getAllCollections:
+SELECT * FROM Collections ORDER BY name ASC;
+
+-- 根据ID获取合集
+getCollectionById:
+SELECT * FROM Collections WHERE id = ?;
+
+-- 根据路径获取合集
+getCollectionByPath:
+SELECT * FROM Collections WHERE path = ?;
+
+-- 更新合集封面
+updateCollectionCover:
+UPDATE Collections SET cover_image = ?, updated_at = ? WHERE id = ?;
+
+-- 删除合集
+deleteCollection:
+DELETE FROM Collections WHERE id = ?;

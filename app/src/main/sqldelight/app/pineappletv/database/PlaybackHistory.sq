@@ -1,0 +1,36 @@
+-- 播放历史表
+CREATE TABLE PlaybackHistory (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    video_id INTEGER NOT NULL,
+    position INTEGER NOT NULL DEFAULT 0,
+    duration INTEGER NOT NULL DEFAULT 0,
+    last_played_at INTEGER NOT NULL,
+    FOREIGN KEY (video_id) REFERENCES Videos(id) ON DELETE CASCADE,
+    UNIQUE(video_id)
+);
+
+-- 插入或更新播放历史
+insertOrUpdatePlaybackHistory:
+INSERT OR REPLACE INTO PlaybackHistory (video_id, position, duration, last_played_at)
+VALUES (?, ?, ?, ?);
+
+-- 获取最近播放的视频
+getRecentPlaybackHistory:
+SELECT ph.*, v.name AS video_name, v.file_path, v.cover_image, c.name AS collection_name
+FROM PlaybackHistory ph
+JOIN Videos v ON ph.video_id = v.id
+JOIN Collections c ON v.collection_id = c.id
+ORDER BY ph.last_played_at DESC
+LIMIT ?;
+
+-- 获取视频的播放历史
+getPlaybackHistoryByVideoId:
+SELECT * FROM PlaybackHistory WHERE video_id = ?;
+
+-- 删除播放历史
+deletePlaybackHistory:
+DELETE FROM PlaybackHistory WHERE video_id = ?;
+
+-- 清空所有播放历史
+clearAllPlaybackHistory:
+DELETE FROM PlaybackHistory;
