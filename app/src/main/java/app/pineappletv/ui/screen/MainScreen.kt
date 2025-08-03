@@ -28,6 +28,7 @@ fun MainScreen(
     onCollectionClick: (Long) -> Unit,
     onVideoClick: (Long) -> Unit,
     onSearchClick: () -> Unit,
+    onDirectorySelectionClick: () -> Unit = {},
     viewModel: MainViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -37,8 +38,40 @@ fun MainScreen(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text("加载中...")
-            CircularProgressIndicator()
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("加载中...")
+            }
+        }
+    } else if (uiState.collections.isEmpty()) {
+        // 没有合集数据时显示引导界面
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "欢迎使用 PineappleTV",
+                    style = MaterialTheme.typography.headlineLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Text(
+                    text = "还没有视频合集，请先选择视频文件夹",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(bottom = 32.dp)
+                )
+                Button(
+                    onClick = onDirectorySelectionClick
+                ) {
+                    Text("选择视频文件夹")
+                }
+            }
         }
     } else {
         Column(

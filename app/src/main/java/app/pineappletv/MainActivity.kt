@@ -6,14 +6,25 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import app.pineappletv.data.repository.VideoRepository
 import app.pineappletv.ui.navigation.PineappleTVNavigation
@@ -135,20 +146,45 @@ class MainActivity : ComponentActivity() {
     
     @Composable
     private fun initializeMainApp() {
-        // 检查是否已有数据来决定起始页面
-        var startDestination = "directory_selection"
+        var startDestination by remember { mutableStateOf("main") }
+        var isCheckingData by remember { mutableStateOf(true) }
         
-        lifecycleScope.launch {
+        LaunchedEffect(Unit) {
             try {
                 val collections = videoRepository.getAllCollections().first()
-                if (collections.isNotEmpty()) {
-                    startDestination = "main"
+                startDestination = if (collections.isEmpty()) {
+                    "directory_selection"
+                } else {
+                    "main"
                 }
             } catch (e: Exception) {
-                // 如果出错，保持默认的目录选择页面
+                // 如果出错，默认显示主页，让用户可以手动导航到目录选择
+                startDestination = "main"
+            } finally {
+                isCheckingData = false
             }
         }
         
-        PineappleTVNavigation(startDestination = startDestination)
+        if (isCheckingData) {
+            // 显示加载中界面
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "正在初始化...",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        } else {
+            PineappleTVNavigation(startDestination = startDestination)
+        }
     }
 }

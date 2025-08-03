@@ -36,6 +36,9 @@ fun PineappleTVNavigation(
                 },
                 onSearchClick = {
                     navController.navigate("search")
+                },
+                onDirectorySelectionClick = {
+                    navController.navigate("directory_selection")
                 }
             )
         }
