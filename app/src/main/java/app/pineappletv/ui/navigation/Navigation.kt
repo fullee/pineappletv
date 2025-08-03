@@ -16,12 +16,30 @@ import app.pineappletv.ui.screen.VideoListScreen
 @Composable
 fun PineappleTVNavigation(
     navController: NavHostController = rememberNavController(),
-    startDestination: String = "directory_selection"
+    startDestination: String = "collection_management_initial"
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
+        // 首次启动的合集管理界面
+        composable("collection_management_initial") {
+            CollectionManagementScreen(
+                onBackClick = {
+                    // 首次启动时不允许返回，退出应用
+                },
+                onAddCollectionClick = {
+                    navController.navigate("folder_browser")
+                },
+                isInitialSetup = true,
+                onSetupComplete = {
+                    navController.navigate("main") {
+                        popUpTo("collection_management_initial") { inclusive = true }
+                    }
+                }
+            )
+        }
+        
         composable("directory_selection") {
             DirectorySelectionScreen(
                 onDirectorySelected = {
@@ -103,8 +121,8 @@ fun PineappleTVNavigation(
                     navController.popBackStack()
                 },
                 onFolderSelected = {
-                    // 选择完成后返回合集管理页面
-                    navController.popBackStack("collection_management", inclusive = false)
+                    // 选择完成后返回上一个页面（可能是初始设置或普通合集管理）
+                    navController.popBackStack()
                 }
             )
         }

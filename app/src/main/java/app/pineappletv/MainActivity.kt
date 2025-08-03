@@ -146,23 +146,23 @@ class MainActivity : ComponentActivity() {
     
     @Composable
     private fun initializeMainApp() {
-        var startDestination by remember { mutableStateOf("main") }
+        var startDestination by remember { mutableStateOf("collection_management_initial") }
         var isCheckingData by remember { mutableStateOf(true) }
         
         LaunchedEffect(Unit) {
-//            try {
-//                val collections = videoRepository.getAllCollections().first()
-//                startDestination = if (collections.isEmpty()) {
-//                    "collection_management"
-//                } else {
-//                    "main"
-//                }
-//            } catch (e: Exception) {
-//                // 如果出错，默认显示主页，让用户可以手动导航到目录选择
-//                startDestination = "main"
-//            } finally {
+            try {
+                val collections = videoRepository.getAllCollections().first()
+                startDestination = if (collections.isEmpty()) {
+                    "collection_management_initial"
+                } else {
+                    "main"
+                }
+            } catch (e: Exception) {
+                // 如果出错，默认显示初始合集管理界面
+                startDestination = "collection_management_initial"
+            } finally {
                 isCheckingData = false
-//            }
+            }
         }
         
         if (isCheckingData) {

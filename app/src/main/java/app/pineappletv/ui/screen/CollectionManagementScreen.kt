@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.pineappletv.database.Collections
@@ -24,6 +25,8 @@ import org.koin.androidx.compose.koinViewModel
 fun CollectionManagementScreen(
     onBackClick: () -> Unit,
     onAddCollectionClick: () -> Unit,
+    isInitialSetup: Boolean = false,
+    onSetupComplete: (() -> Unit)? = null,
     viewModel: CollectionManagementViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -33,15 +36,26 @@ fun CollectionManagementScreen(
         viewModel.loadCollections()
     }
     
+    // 监听合集变化，在初始设置模式下，有合集时自动完成设置
+    LaunchedEffect(uiState.collections, isInitialSetup) {
+        if (isInitialSetup && uiState.collections.isNotEmpty() && onSetupComplete != null) {
+            onSetupComplete()
+        }
+    }
+    
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         // 顶部导航栏
         TopAppBar(
-            title = { Text("合集管理") },
+            title = { 
+                Text(if (isInitialSetup) "欢迎使用 PineappleTV" else "合集管理") 
+            },
             navigationIcon = {
-                IconButton(onClick = onBackClick) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                if (!isInitialSetup) {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                    }
                 }
             },
             actions = {
@@ -64,17 +78,36 @@ fun CollectionManagementScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(32.dp)
                 ) {
-                    Text(
-                        text = "暂无合集",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = onAddCollectionClick) {
+                    if (isInitialSetup) {
+                        Text(
+                            text = "开始创建您的媒体库",
+                            style = MaterialTheme.typography.headlineSmall,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "请添加包含视频文件的文件夹来创建合集",
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        Text(
+                            text = "暂无合集",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Button(
+                        onClick = onAddCollectionClick,
+                        modifier = Modifier.fillMaxWidth(0.6f)
+                    ) {
                         Icon(Icons.Default.Add, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("添加合集")
+                        Text(if (isInitialSetup) "选择视频文件夹" else "添加合集")
                     }
                 }
             }

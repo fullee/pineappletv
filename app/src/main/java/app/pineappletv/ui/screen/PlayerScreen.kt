@@ -222,41 +222,6 @@ private fun PlayerControls(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        // 顶部控制栏
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Color.Black.copy(alpha = 0.7f),
-                    RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
-                )
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "返回",
-                    tint = Color.White
-                )
-            }
-            
-            Text(
-                text = videoName,
-                color = Color.White,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
-            )
-            
-            IconButton(onClick = { /* 设置 */ }) {
-                Icon(
-                    Icons.Default.Settings,
-                    contentDescription = "设置",
-                    tint = Color.White
-                )
-            }
-        }
         
         Spacer(modifier = Modifier.weight(1f))
         
