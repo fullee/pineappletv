@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import app.pineappletv.ui.screen.CollectionManagementScreen
 import app.pineappletv.ui.screen.DirectorySelectionScreen
+import app.pineappletv.ui.screen.FolderBrowserScreen
 import app.pineappletv.ui.screen.MainScreen
 import app.pineappletv.ui.screen.PlayerScreen
 import app.pineappletv.ui.screen.SearchScreen
@@ -91,14 +92,18 @@ fun PineappleTVNavigation(
                     navController.popBackStack()
                 },
                 onAddCollectionClick = {
-                    navController.navigate("directory_selection_add")
+                    navController.navigate("folder_browser")
                 }
             )
         }
         
-        composable("directory_selection_add") {
-            DirectorySelectionScreen(
-                onDirectorySelected = {
+        composable("folder_browser") {
+            FolderBrowserScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onFolderSelected = {
+                    // 选择完成后返回合集管理页面
                     navController.popBackStack("collection_management", inclusive = false)
                 }
             )
