@@ -4,7 +4,6 @@ import app.pineappletv.data.database.DatabaseManager
 import app.pineappletv.data.repository.VideoRepository
 import app.pineappletv.data.scanner.VideoScanner
 import app.pineappletv.ui.viewmodel.CollectionManagementViewModel
-import app.pineappletv.ui.viewmodel.DirectorySelectionViewModel
 import app.pineappletv.ui.viewmodel.FolderBrowserViewModel
 import app.pineappletv.ui.viewmodel.MainViewModel
 import app.pineappletv.ui.viewmodel.PlayerViewModel
@@ -26,7 +25,6 @@ val appModule = module {
     single { VideoRepository(get(), get()) }
     
     // ViewModels
-    viewModel { DirectorySelectionViewModel(get()) }
     viewModel { MainViewModel(get()) }
     viewModel { VideoListViewModel(get()) }
     viewModel { SearchViewModel(get()) }

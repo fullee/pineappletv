@@ -135,7 +135,7 @@ class VideoScanner(private val context: Context) {
         try {
             val retriever = MediaMetadataRetriever()
             retriever.setDataSource(videoPath)
-            val bitmap = retriever.getFrameAtTime(1000000) // 1秒处的帧
+            val bitmap = retriever.getFrameAtTime(5000000) // 1秒处的帧
             retriever.release()
             
             if (bitmap != null) {
