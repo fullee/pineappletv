@@ -65,6 +65,58 @@ fun CollectionManagementScreen(
             }
         )
         
+        // 重建索引进度显示
+        uiState.refreshProgress?.let { progress ->
+            if (progress.isRefreshing) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "正在重建「${progress.collectionName}」索引...",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        if (progress.total > 0) {
+                            LinearProgressIndicator(
+                                progress = { progress.current.toFloat() / progress.total.toFloat() },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "${progress.current}/${progress.total}",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = progress.currentItem,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+        }
+        
         if (uiState.isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -121,7 +173,8 @@ fun CollectionManagementScreen(
                     CollectionManagementCard(
                         collection = collection,
                         onDeleteClick = { showDeleteDialog = collection },
-                        onRefreshClick = { viewModel.refreshCollection(collection.id) }
+                        onRefreshClick = { viewModel.refreshCollection(collection.id) },
+                        isRefreshing = uiState.refreshProgress?.let { it.collectionId == collection.id && it.isRefreshing } ?: false
                     )
                 }
             }
@@ -174,7 +227,8 @@ fun CollectionManagementScreen(
 private fun CollectionManagementCard(
     collection: Collections,
     onDeleteClick: () -> Unit,
-    onRefreshClick: () -> Unit
+    onRefreshClick: () -> Unit,
+    isRefreshing: Boolean = false
 ) {
     Card(
         modifier = Modifier.fillMaxWidth()
@@ -208,18 +262,32 @@ private fun CollectionManagementCard(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    IconButton(onClick = onRefreshClick) {
-                        Icon(
-                            Icons.Default.Refresh,
-                            contentDescription = "重新索引",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                    IconButton(
+                        onClick = onRefreshClick,
+                        enabled = !isRefreshing
+                    ) {
+                        if (isRefreshing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        } else {
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = "重新索引",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
-                    IconButton(onClick = onDeleteClick) {
+                    IconButton(
+                        onClick = onDeleteClick,
+                        enabled = !isRefreshing
+                    ) {
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = "删除",
-                            tint = MaterialTheme.colorScheme.error
+                            tint = if (isRefreshing) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) else MaterialTheme.colorScheme.error
                         )
                     }
                 }

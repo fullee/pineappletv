@@ -131,15 +131,22 @@ class VideoRepository(
         database.collectionsQueries.deleteCollection(collectionId)
     }
     
-    suspend fun refreshCollection(collectionPath: String) = withContext(Dispatchers.IO) {
+    suspend fun refreshCollection(
+        collectionPath: String,
+        onProgress: ((current: Int, total: Int, currentItem: String) -> Unit)? = null
+    ) = withContext(Dispatchers.IO) {
         // 获取合集信息
         val collection = database.collectionsQueries.getCollectionByPath(collectionPath).executeAsOneOrNull()
         if (collection != null) {
+            onProgress?.invoke(0, 1, "删除旧数据...")
+            
             // 删除该合集的所有视频
             database.videosQueries.deleteVideosByCollectionId(collection.id)
             
-            // 重新扫描目录
-            val collectionInfo = videoScanner.scanDirectory(collectionPath).firstOrNull { it.path == collectionPath }
+            onProgress?.invoke(0, 1, "开始重新扫描...")
+            
+            // 重新扫描目录，带进度回调
+            val collectionInfo = videoScanner.scanDirectory(collectionPath, onProgress).firstOrNull { it.path == collectionPath }
             if (collectionInfo != null) {
                 val currentTime = System.currentTimeMillis()
                 // 插入新扫描的视频
@@ -148,7 +155,7 @@ class VideoRepository(
                         collection_id = collection.id,
                         name = video.name,
                         file_path = video.path,
-                        cover_image = null,
+                        cover_image = video.thumbnailPath, // 使用生成的缩略图路径
                         duration = video.duration,
                         file_size = video.size,
                         created_at = currentTime,
@@ -156,10 +163,11 @@ class VideoRepository(
                     )
                 }
                 
-                // 更新合集的更新时间
+                // 更新合集的更新时间和封面
+                val firstVideoThumbnail = collectionInfo.videos.firstOrNull()?.thumbnailPath
                 database.collectionsQueries.updateCollectionCover(
                     id = collection.id,
-                    cover_image = null,
+                    cover_image = firstVideoThumbnail,
                     updated_at = currentTime
                 )
             }
