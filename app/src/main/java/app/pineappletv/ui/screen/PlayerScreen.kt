@@ -6,7 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -17,9 +19,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import kotlinx.coroutines.awaitCancellation
 import app.pineappletv.ui.viewmodel.PlayerViewModel
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.PlayerView
 import org.koin.androidx.compose.koinViewModel
 
@@ -79,11 +83,7 @@ fun PlayerScreen(
         }
     }
     
-    DisposableEffect(Unit) {
-        onDispose {
-            exoPlayer.release()
-        }
-    }
+
     
     Box(
         modifier = Modifier
@@ -163,10 +163,43 @@ fun PlayerScreen(
     }
     
     // 监听播放完成事件
-    LaunchedEffect(exoPlayer) {
-        // 这里需要监听ExoPlayer的播放完成事件
-        // 如果启用了自动播放下一集，则自动播放下一个视频
-        // 否则返回到列表界面
+    LaunchedEffect(exoPlayer, uiState.autoPlayNext) {
+        val listener = object : Player.Listener {
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (playbackState == Player.STATE_ENDED) {
+                    // 播放完成
+                    if (uiState.autoPlayNext) {
+                        // 自动播放下一集
+                        val playlist = uiState.playlistVideos
+                        val currentIndex = playlist.indexOfFirst { it.id == uiState.currentVideo?.id }
+                        if (currentIndex >= 0 && currentIndex < playlist.size - 1) {
+                            viewModel.playNext()
+                        } else {
+                            // 没有下一集了，返回列表
+                            onBackClick()
+                        }
+                    } else {
+                        // 不自动播放，返回列表
+                        onBackClick()
+                    }
+                }
+            }
+        }
+        
+        try {
+            exoPlayer.addListener(listener)
+            awaitCancellation()
+        } finally {
+            exoPlayer.removeListener(listener)
+        }
+    }
+    
+    DisposableEffect(exoPlayer) {
+        onDispose {
+            // 移除所有监听器并释放播放器
+            exoPlayer.stop()
+            exoPlayer.release()
+        }
     }
 }
 
@@ -203,7 +236,7 @@ private fun PlayerControls(
         ) {
             IconButton(onClick = onBack) {
                 Icon(
-                    Icons.Default.ArrowBack,
+                    Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "返回",
                     tint = Color.White
                 )
@@ -281,7 +314,7 @@ private fun PlayerControls(
                 
                 Button(onClick = onPlayPause) {
                     Icon(
-                        Icons.Default.PlayArrow,
+                        imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                         contentDescription = if (isPlaying) "暂停" else "播放",
                         tint = Color.White
                     )
