@@ -60,13 +60,13 @@ class VideoScanner(private val context: Context) {
         directory.listFiles{ file ->
             file.isFile && isVideoFile(file.name)
         }?.forEach { videoFile ->
-//            val duration = getVideoDuration(videoFile)
+            val duration = getVideoDuration(videoFile)
             videos.add(
                 VideoFile(
                     name = videoFile.nameWithoutExtension,
                     path = videoFile.absolutePath,
                     size = videoFile.length(),
-                    duration = 0L
+                    duration = duration
                 )
             )
         }
