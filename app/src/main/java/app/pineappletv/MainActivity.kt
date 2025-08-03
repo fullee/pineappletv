@@ -150,19 +150,19 @@ class MainActivity : ComponentActivity() {
         var isCheckingData by remember { mutableStateOf(true) }
         
         LaunchedEffect(Unit) {
-            try {
-                val collections = videoRepository.getAllCollections().first()
-                startDestination = if (collections.isEmpty()) {
-                    "directory_selection"
-                } else {
-                    "main"
-                }
-            } catch (e: Exception) {
-                // 如果出错，默认显示主页，让用户可以手动导航到目录选择
-                startDestination = "main"
-            } finally {
+//            try {
+//                val collections = videoRepository.getAllCollections().first()
+//                startDestination = if (collections.isEmpty()) {
+//                    "collection_management"
+//                } else {
+//                    "main"
+//                }
+//            } catch (e: Exception) {
+//                // 如果出错，默认显示主页，让用户可以手动导航到目录选择
+//                startDestination = "main"
+//            } finally {
                 isCheckingData = false
-            }
+//            }
         }
         
         if (isCheckingData) {
