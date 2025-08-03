@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.8"
+        android:scaleY="0.8"
+        android:translateX="10.8"
+        android:translateY="10.8">
+        <!-- 菠萝叶子 -->
+        <path
+            android:fillColor="#32CD32"
+            android:pathData="M50,15L52,25L54,15L56,25L58,15L56,5L54,10L52,5L50,15Z" />
+        <!-- 菠萝身体 -->
+        <path
+            android:fillColor="#FFD700"
+            android:pathData="M54,30C65,30 75,40 75,55L75,70C75,80 65,85 54,85C43,85 33,80 33,70L33,55C33,40 43,30 54,30Z" />
+        <!-- 菠萝纹理 -->
+        <path
+            android:fillColor="#FFA500"
+            android:pathData="M40,40L45,45L40,50L45,55L40,60L45,65L40,70M48,35L53,40L48,45L53,50L48,55L53,60L48,65L53,70M56,35L61,40L56,45L61,50L56,55L61,60L56,65L61,70M64,40L69,45L64,50L69,55L64,60L69,65L64,70" />
+        <!-- TV屏幕背景 -->
+        <path
+            android:fillColor="#000000"
+            android:pathData="M39,50L69,50L69,70L39,70Z" />
+        <!-- TV屏幕内容 -->
+        <path
+            android:fillColor="#4169E1"
+            android:pathData="M41,52L67,52L67,68L41,68Z" />
+        <!-- 播放按钮 -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M50,58L58,62L50,66Z" />
+    </group>
+</vector>

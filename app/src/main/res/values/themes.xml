@@ -1,4 +1,17 @@
 <resources>
-
-    <style name="Theme.PineappleTV" parent="@style/Theme.Leanback" />
+    <!-- 基础主题，继承AppCompat -->
+    <style name="Theme.PineappleTV" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/pineapple_primary</item>
+        <item name="colorPrimaryDark">@color/pineapple_primary_variant</item>
+        <item name="colorAccent">@color/pineapple_secondary</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+    
+    <!-- TV专用主题 -->
+    <style name="Theme.PineappleTV.TV" parent="@style/Theme.Leanback">
+        <item name="colorPrimary">@color/pineapple_primary</item>
+        <item name="colorPrimaryDark">@color/pineapple_primary_variant</item>
+        <item name="colorAccent">@color/pineapple_secondary</item>
+    </style>
 </resources>

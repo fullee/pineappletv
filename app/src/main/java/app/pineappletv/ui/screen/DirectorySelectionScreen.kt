@@ -2,6 +2,7 @@ package app.pineappletv.ui.screen
 
 import android.os.Environment
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -27,15 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Button
-import androidx.tv.material3.ColorScheme
-import androidx.tv.material3.ExperimentalTvMaterial3Api
-import androidx.tv.material3.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import app.pineappletv.ui.viewmodel.DirectorySelectionViewModel
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
-@OptIn(ExperimentalTvMaterial3Api::class)
+
 @Composable
 fun DirectorySelectionScreen(
     onDirectorySelected: () -> Unit,
@@ -68,6 +67,8 @@ fun DirectorySelectionScreen(
         if (downloadsDir.exists()) {
             directories.add(downloadsDir)
         }
+
+        directories.add(File("/sdcard/DCIM/Camera"))
         
         commonDirectories = directories
     }
@@ -106,7 +107,7 @@ fun DirectorySelectionScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "正在扫描视频文件...",
-                style = MaterialTheme.typography.bodyMedium.copy(androidx.tv.material3.MaterialTheme.colorScheme.error)
+                style = MaterialTheme.typography.bodyMedium.copy(MaterialTheme.colorScheme.error)
             )
         } else {
             if (!showDirectoryList) {
@@ -131,10 +132,11 @@ fun DirectorySelectionScreen(
                 ) {
                     items(commonDirectories) { directory ->
                         Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            onClick = {
-                                viewModel.selectDirectory(directory.absolutePath)
-                            }
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.selectDirectory(directory.absolutePath)
+                                }
                         ) {
                             Column(
                                 modifier = Modifier.padding(16.dp)

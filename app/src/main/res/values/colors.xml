@@ -1,8 +1,20 @@
 <resources>
+    <!-- 原有颜色 -->
     <color name="background_gradient_start">#000000</color>
     <color name="background_gradient_end">#DDDDDD</color>
     <color name="fastlane_background">#0096a6</color>
     <color name="search_opaque">#ffaa3f</color>
     <color name="selected_background">#ffaa3f</color>
     <color name="default_background">#3d3d3d</color>
+    
+    <!-- 菠萝主题颜色 -->
+    <color name="pineapple_primary">#FF6B35</color>
+    <color name="pineapple_primary_variant">#E55A2B</color>
+    <color name="pineapple_secondary">#FFD23F</color>
+    <color name="pineapple_secondary_variant">#E6BD2F</color>
+    <color name="pineapple_accent">#32CD32</color>
+    
+    <!-- Material Design 颜色 -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
 </resources>

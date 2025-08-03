@@ -16,4 +16,18 @@
     <!-- Error messages -->
     <string name="error_fragment_message">An error occurred</string>
     <string name="dismiss_error">Dismiss</string>
+    
+    <!-- Permission related strings -->
+    <string name="permission_required_title">需要权限</string>
+    <string name="permission_required_message">PineappleTV 需要以下权限来正常工作：</string>
+    <string name="permission_storage_title">存储权限</string>
+    <string name="permission_storage_description">用于访问和扫描设备上的视频文件</string>
+    <string name="permission_media_title">相册权限</string>
+    <string name="permission_media_description">用于访问媒体库中的视频和图片文件</string>
+    <string name="permission_grant">授予权限</string>
+    <string name="permission_open_settings">打开设置</string>
+    <string name="permission_warning">注意：没有这些权限，应用将无法扫描和播放视频文件</string>
+    <string name="permission_granted">权限已获取</string>
+    <string name="permission_denied">需要存储和相册权限才能正常运行应用</string>
+    <string name="permission_manual_setup">请在设置中手动开启存储和相册权限，否则应用无法正常工作</string>
 </resources>

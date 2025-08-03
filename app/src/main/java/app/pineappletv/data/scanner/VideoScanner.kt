@@ -57,14 +57,16 @@ class VideoScanner(private val context: Context) {
     private suspend fun scanVideosInDirectory(directory: File): List<VideoFile> = withContext(Dispatchers.IO) {
         val videos = mutableListOf<VideoFile>()
         
-        directory.listFiles().forEach { videoFile ->
-            val duration = getVideoDuration(videoFile)
+        directory.listFiles{ file ->
+            file.isFile && isVideoFile(file.name)
+        }?.forEach { videoFile ->
+//            val duration = getVideoDuration(videoFile)
             videos.add(
                 VideoFile(
                     name = videoFile.nameWithoutExtension,
                     path = videoFile.absolutePath,
                     size = videoFile.length(),
-                    duration = duration
+                    duration = 0L
                 )
             )
         }

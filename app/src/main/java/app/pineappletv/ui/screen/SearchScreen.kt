@@ -1,5 +1,6 @@
 package app.pineappletv.ui.screen
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -14,15 +15,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Card
-import androidx.tv.material3.ExperimentalTvMaterial3Api
-import androidx.tv.material3.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.Text
 import app.pineappletv.database.SearchVideos
 import app.pineappletv.ui.viewmodel.SearchViewModel
 import coil.compose.AsyncImage
 import org.koin.androidx.compose.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalTvMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     onBackClick: () -> Unit,
@@ -134,15 +134,15 @@ fun SearchScreen(
     }
 }
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 private fun SearchResultCard(
     video: SearchVideos,
     onClick: () -> Unit
 ) {
     Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
     ) {
         Column(
             modifier = Modifier.padding(12.dp)
