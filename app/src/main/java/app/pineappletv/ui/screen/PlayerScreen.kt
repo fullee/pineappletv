@@ -101,6 +101,27 @@ fun PlayerScreen(
             modifier = Modifier.fillMaxSize()
         )
         
+        // 点击视频区域显示/隐藏控制器（不包括控制器本身）
+        if (!showControls) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable {
+                        showControls = true
+                    }
+            )
+        } else {
+            // 点击视频播放区域（中间部分）隐藏控制器
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 80.dp, bottom = 200.dp) // 避开顶部和底部控制器区域
+                    .clickable {
+                        showControls = false
+                    }
+            )
+        }
+        
         // 自定义控制器
         if (showControls) {
             PlayerControls(
@@ -139,15 +160,6 @@ fun PlayerScreen(
                 }
             )
         }
-        
-        // 点击屏幕显示/隐藏控制器
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable {
-                    showControls = !showControls
-                }
-        )
     }
     
     // 监听播放完成事件
