@@ -4,7 +4,8 @@ data class VideoFile(
     val name: String,
     val path: String,
     val size: Long,
-    val duration: Long = 0L
+    val duration: Long = 0L,
+    val thumbnailPath: String? = null
 )
 
 data class CollectionInfo(

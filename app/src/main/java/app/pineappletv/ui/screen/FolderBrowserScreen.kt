@@ -67,9 +67,9 @@ fun FolderBrowserScreen(
                             viewModel.selectFolder(path)
                         }
                     },
-                    enabled = uiState.currentPath != null && !uiState.isLoading
+                    enabled = uiState.currentPath != null && !uiState.isLoading && uiState.scanProgress?.isScanning != true
                 ) {
-                    if (uiState.isLoading) {
+                    if (uiState.isLoading || uiState.scanProgress?.isScanning == true) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(16.dp),
                             strokeWidth = 2.dp
@@ -98,6 +98,58 @@ fun FolderBrowserScreen(
             }
         }
         
+        // 扫描进度显示
+        uiState.scanProgress?.let { progress ->
+            if (progress.isScanning) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "正在扫描视频文件...",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        if (progress.total > 0) {
+                            LinearProgressIndicator(
+                                progress = { progress.current.toFloat() / progress.total.toFloat() },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "${progress.current}/${progress.total}",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = progress.currentItem,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+        }
+        
         if (uiState.isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -105,7 +157,7 @@ fun FolderBrowserScreen(
             ) {
                 CircularProgressIndicator()
             }
-        } else {
+        } else if (uiState.scanProgress?.isScanning != true) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),

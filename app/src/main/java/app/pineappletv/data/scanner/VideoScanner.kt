@@ -1,14 +1,18 @@
 package app.pineappletv.data.scanner
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
+import android.media.ThumbnailUtils
 import android.net.Uri
+import android.provider.MediaStore
 import android.util.Log
 import app.pineappletv.data.model.CollectionInfo
 import app.pineappletv.data.model.VideoFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
 
 class VideoScanner(private val context: Context) {
     
@@ -16,7 +20,10 @@ class VideoScanner(private val context: Context) {
         "mp4", "avi", "mkv", "mov", "wmv", "flv", "webm", "m4v", "3gp", "ts", "m2ts"
     )
     
-    suspend fun scanDirectory(directoryPath: String): List<CollectionInfo> = withContext(Dispatchers.IO) {
+    suspend fun scanDirectory(
+        directoryPath: String,
+        onProgress: ((current: Int, total: Int, currentItem: String) -> Unit)? = null
+    ): List<CollectionInfo> = withContext(Dispatchers.IO) {
         val rootDir = File(directoryPath)
         if (!rootDir.exists() || !rootDir.isDirectory) {
             return@withContext emptyList()
@@ -24,54 +31,87 @@ class VideoScanner(private val context: Context) {
         
         val collections = mutableListOf<CollectionInfo>()
         Log.d("VideoScanner", "Scanning directory: $directoryPath")
-        // 扫描根目录下的所有子文件夹
-        rootDir.listFiles { file -> file.isDirectory }?.forEach { collectionDir ->
-            val videos = scanVideosInDirectory(collectionDir)
+        
+        // 收集所有需要扫描的目录
+        val dirsToScan = mutableListOf<File>()
+        rootDir.listFiles { file -> file.isDirectory }?.let { dirsToScan.addAll(it) }
+        
+        // 如果根目录包含视频文件，也加入扫描列表
+        if (hasVideoFiles(rootDir)) {
+            dirsToScan.add(0, rootDir) // 添加到开头
+        }
+        
+        var processedCount = 0
+        val totalDirs = dirsToScan.size
+        
+        // 扫描所有目录
+        dirsToScan.forEach { dir ->
+            onProgress?.invoke(processedCount, totalDirs, "扫描文件夹: ${dir.name}")
+            
+            val videos = scanVideosInDirectory(dir) { current, total, videoName ->
+                onProgress?.invoke(processedCount, totalDirs, "处理视频: $videoName ($current/$total)")
+            }
+            
             if (videos.isNotEmpty()) {
                 collections.add(
                     CollectionInfo(
-                        name = collectionDir.name,
-                        path = collectionDir.absolutePath,
+                        name = if (dir == rootDir) rootDir.name else dir.name,
+                        path = dir.absolutePath,
                         videos = videos
                     )
                 )
             }
-        }
-        
-        // 如果根目录直接包含视频文件，创建一个默认合集
-        val rootVideos = scanVideosInDirectory(rootDir)
-        Log.d("VideoScanner", "Root videos: $rootVideos")
-        if (rootVideos.isNotEmpty()) {
-            collections.add(
-                CollectionInfo(
-                    name = rootDir.name,
-                    path = rootDir.absolutePath,
-                    videos = rootVideos
-                )
-            )
+            
+            processedCount++
         }
         
         collections
     }
     
-    private suspend fun scanVideosInDirectory(directory: File): List<VideoFile> = withContext(Dispatchers.IO) {
+    private fun hasVideoFiles(directory: File): Boolean {
+        return directory.listFiles()?.any { file ->
+            file.isFile && isVideoFile(file)
+        } ?: false
+    }
+    
+    private suspend fun scanVideosInDirectory(
+        directory: File,
+        onVideoProgress: ((current: Int, total: Int, videoName: String) -> Unit)? = null
+    ): List<VideoFile> = withContext(Dispatchers.IO) {
         val videos = mutableListOf<VideoFile>()
         
-        directory.listFiles{ file ->
-            file.isFile && isVideoFile(file.name)
-        }?.forEach { videoFile ->
+        val videoFiles = directory.listFiles { file ->
+            file.isFile && isVideoFile(file)
+        } ?: emptyArray()
+        
+        val totalVideos = videoFiles.size
+        var processedVideos = 0
+        
+        videoFiles.forEach { videoFile ->
+            onVideoProgress?.invoke(processedVideos + 1, totalVideos, videoFile.nameWithoutExtension)
+            
             val duration = getVideoDuration(videoFile)
+            val thumbnailPath = generateVideoThumbnail(videoFile.absolutePath)
+            
             videos.add(
                 VideoFile(
                     name = videoFile.nameWithoutExtension,
                     path = videoFile.absolutePath,
                     size = videoFile.length(),
-                    duration = duration
+                    duration = duration,
+                    thumbnailPath = thumbnailPath
                 )
             )
+            
+            processedVideos++
         }
         
         videos.sortedBy { it.name }
+    }
+    
+    private fun isVideoFile(file: File): Boolean {
+        val extension = file.extension.lowercase()
+        return extension in videoExtensions
     }
     
     private fun isVideoFile(fileName: String): Boolean {
@@ -91,17 +131,36 @@ class VideoScanner(private val context: Context) {
         }
     }
     
-    suspend fun generateVideoThumbnail(videoPath: String): String? = withContext(Dispatchers.IO) {
+    private suspend fun generateVideoThumbnail(videoPath: String): String? = withContext(Dispatchers.IO) {
         try {
             val retriever = MediaMetadataRetriever()
             retriever.setDataSource(videoPath)
             val bitmap = retriever.getFrameAtTime(1000000) // 1秒处的帧
             retriever.release()
             
-            // 这里可以将bitmap保存到内部存储并返回路径
-            // 为简化，暂时返回null
+            if (bitmap != null) {
+                // 创建缩略图目录
+                val thumbnailDir = File(context.filesDir, "thumbnails")
+                if (!thumbnailDir.exists()) {
+                    thumbnailDir.mkdirs()
+                }
+                
+                // 生成缩略图文件名
+                val videoFile = File(videoPath)
+                val thumbnailFile = File(thumbnailDir, "${videoFile.nameWithoutExtension}_thumb.jpg")
+                
+                // 保存缩略图
+                FileOutputStream(thumbnailFile).use { out ->
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 80, out)
+                }
+                bitmap.recycle()
+                
+                return@withContext thumbnailFile.absolutePath
+            }
+            
             null
         } catch (e: Exception) {
+            Log.e("VideoScanner", "Failed to generate thumbnail for $videoPath", e)
             null
         }
     }

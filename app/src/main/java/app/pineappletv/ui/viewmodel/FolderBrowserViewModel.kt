@@ -42,14 +42,26 @@ class FolderBrowserViewModel(
     fun selectFolder(path: String) {
         viewModelScope.launch {
             try {
-                // 扫描并保存选中的文件夹作为合集
-                videoRepository.scanAndSaveCollections(path)
+                _uiState.value = _uiState.value.copy(
+                    scanProgress = ScanProgress(0, 0, "开始扫描...", true),
+                    error = null
+                )
+                
+                // 扫描并保存选中的文件夹作为合集，带进度回调
+                videoRepository.scanAndSaveCollections(path) { current, total, currentItem ->
+                    _uiState.value = _uiState.value.copy(
+                        scanProgress = ScanProgress(current, total, currentItem, true)
+                    )
+                }
+                
                 _uiState.value = _uiState.value.copy(
                     isCompleted = true,
+                    scanProgress = null,
                     error = null
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
+                    scanProgress = null,
                     error = e.message ?: "创建合集失败"
                 )
             }
@@ -96,5 +108,13 @@ data class FolderBrowserUiState(
     val folders: List<File> = emptyList(),
     val isLoading: Boolean = false,
     val isCompleted: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val scanProgress: ScanProgress? = null
+)
+
+data class ScanProgress(
+    val current: Int,
+    val total: Int,
+    val currentItem: String,
+    val isScanning: Boolean = false
 )

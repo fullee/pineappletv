@@ -24,8 +24,11 @@ class VideoRepository(
     private val database = databaseManager.database
     
     // 合集相关操作
-    suspend fun scanAndSaveCollections(directoryPath: String) = withContext(Dispatchers.IO) {
-        val collections = videoScanner.scanDirectory(directoryPath)
+    suspend fun scanAndSaveCollections(
+        directoryPath: String,
+        onProgress: ((current: Int, total: Int, currentItem: String) -> Unit)? = null
+    ) = withContext(Dispatchers.IO) {
+        val collections = videoScanner.scanDirectory(directoryPath, onProgress)
         Log.d("VideoRepository", "Found ${collections.size} collections")
         collections.forEach { collectionInfo ->
             // 插入合集
@@ -47,7 +50,7 @@ class VideoRepository(
                     collection_id = collection.id,
                     name = video.name,
                     file_path = video.path,
-                    cover_image = null,
+                    cover_image = video.thumbnailPath, // 使用生成的缩略图路径
                     duration = video.duration,
                     file_size = video.size,
                     created_at = currentTime,
