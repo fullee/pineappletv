@@ -1,16 +1,21 @@
 package app.pineappletv.ui.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -59,16 +64,22 @@ fun VideoListScreen(
                 CircularProgressIndicator()
             }
         } else {
+            val gridState = rememberLazyGridState()
+            
             LazyVerticalGrid(
+                state = gridState,
                 columns = GridCells.Adaptive(minSize = 200.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.padding(16.dp)
             ) {
-                items(uiState.videos) { video ->
+                items(uiState.videos.size) { index ->
+                    val video = uiState.videos[index]
                     VideoCard(
                         video = video,
-                        onClick = { onVideoClick(video.id) }
+                        onClick = { onVideoClick(video.id) },
+                        gridState = gridState,
+                        index = index
                     )
                 }
             }
@@ -96,12 +107,35 @@ fun VideoListScreen(
 @Composable
 private fun VideoCard(
     video: Videos,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    gridState: LazyGridState,
+    index: Int
 ) {
+    var isFocused by remember { mutableStateOf(false) }
+    
+    // 当卡片获得焦点时自动滚动
+    LaunchedEffect(isFocused) {
+        if (isFocused) {
+            gridState.animateScrollToItem(index)
+        }
+    }
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .focusable()
+            .onFocusChanged { focusState ->
+                isFocused = focusState.isFocused
+            }
+            .clickable { onClick() },
+        border = if (isFocused) {
+            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        } else null,
+        elevation = if (isFocused) {
+            CardDefaults.cardElevation(defaultElevation = 8.dp)
+        } else {
+            CardDefaults.cardElevation()
+        }
     ) {
         Column(
             modifier = Modifier.padding(12.dp)

@@ -133,7 +133,7 @@ fun PlayerScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 80.dp, bottom = 200.dp) // 避开顶部和底部控制器区域
+                    .padding(bottom = 200.dp) // 底部控制器区域
                     .clickable {
                         showControls = false
                     }

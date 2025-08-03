@@ -1,16 +1,25 @@
 package app.pineappletv.ui.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -75,74 +84,96 @@ fun MainScreen(
             }
         }
     } else {
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // 标题栏
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "PineappleTV",
-                    style = MaterialTheme.typography.headlineLarge
-                )
-                
+            item {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Button(onClick = onSearchClick) {
-                        Text("搜索")
-                    }
-                    Button(onClick = onSettingsClick) {
-                        Text("设置")
+                    Text(
+                        text = "PineappleTV",
+                        style = MaterialTheme.typography.headlineLarge
+                    )
+                    
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(onClick = onSearchClick) {
+                            Text("搜索")
+                        }
+                        Button(onClick = onSettingsClick) {
+                            Text("设置")
+                        }
                     }
                 }
             }
-            
-            Spacer(modifier = Modifier.height(24.dp))
             
             // 最近播放
             if (uiState.recentPlayback.isNotEmpty()) {
-                Text(
-                    text = "最近播放",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
+                item {
+                    Text(
+                        text = "最近播放",
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
                 
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.padding(bottom = 32.dp)
-                ) {
-                    items(uiState.recentPlayback) { playback ->
-                        RecentPlaybackCard(
-                            playback = playback,
-                            onClick = { onVideoClick(playback.video_id) }
-                        )
+                item {
+                    val recentPlaybackListState = rememberLazyListState()
+                    
+                    LazyRow(
+                        state = recentPlaybackListState,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.height(280.dp) // 固定高度避免测量问题
+                    ) {
+                        items(uiState.recentPlayback.size) { index ->
+                            val playback = uiState.recentPlayback[index]
+                            RecentPlaybackCard(
+                                playback = playback,
+                                onClick = { onVideoClick(playback.video_id) },
+                                listState = recentPlaybackListState,
+                                index = index
+                            )
+                        }
                     }
                 }
             }
             
-            // 合集列表
-            Text(
-                text = "媒体库",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            // 合集列表标题
+            item {
+                Text(
+                    text = "媒体库",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                )
+            }
             
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 200.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(uiState.collections) { collection ->
-                    CollectionCard(
-                        collection = collection,
-                        onClick = { onCollectionClick(collection.id) }
-                    )
+            // 合集网格 - 使用固定高度
+            item {
+                val rows = (uiState.collections.size + 1) / 2
+                val gridHeight = (rows * 200).dp // 估算网格高度
+                
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 200.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.height(gridHeight),
+                    userScrollEnabled = false // 禁用内部滚动，使用外部LazyColumn滚动
+                ) {
+                    items(uiState.collections.size) { index ->
+                        val collection = uiState.collections[index]
+                        CollectionCard(
+                            collection = collection,
+                            onClick = { onCollectionClick(collection.id) }
+                        )
+                    }
                 }
             }
         }
@@ -153,12 +184,36 @@ fun MainScreen(
 @Composable
 private fun RecentPlaybackCard(
     playback: GetRecentPlaybackHistory,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    listState: LazyListState,
+    index: Int
 ) {
+    var isFocused by remember { mutableStateOf(false) }
+    
+    // 当卡片获得焦点时自动滚动
+    LaunchedEffect(isFocused) {
+        if (isFocused) {
+            // 滚动最近播放列表到当前项
+            listState.animateScrollToItem(index)
+        }
+    }
+    
     Card(
         modifier = Modifier
             .width(300.dp)
-            .clickable { onClick() }
+            .focusable()
+            .onFocusChanged { focusState ->
+                isFocused = focusState.isFocused
+            }
+            .clickable { onClick() },
+        border = if (isFocused) {
+            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        } else null,
+        elevation = if (isFocused) {
+            CardDefaults.cardElevation(defaultElevation = 8.dp)
+        } else {
+            CardDefaults.cardElevation()
+        }
     ) {
         Column(
             modifier = Modifier.padding(12.dp)
@@ -212,10 +267,24 @@ private fun CollectionCard(
     collection: Collections,
     onClick: () -> Unit
 ) {
+    var isFocused by remember { mutableStateOf(false) }
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .focusable()
+            .onFocusChanged { focusState ->
+                isFocused = focusState.isFocused
+            }
+            .clickable { onClick() },
+        border = if (isFocused) {
+            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        } else null,
+        elevation = if (isFocused) {
+            CardDefaults.cardElevation(defaultElevation = 8.dp)
+        } else {
+            CardDefaults.cardElevation()
+        }
     ) {
         Column(
             modifier = Modifier.padding(12.dp)

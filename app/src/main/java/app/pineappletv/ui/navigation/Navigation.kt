@@ -6,7 +6,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import app.pineappletv.ui.screen.CollectionManagementScreen
-import app.pineappletv.ui.screen.DirectorySelectionScreen
 import app.pineappletv.ui.screen.FolderBrowserScreen
 import app.pineappletv.ui.screen.MainScreen
 import app.pineappletv.ui.screen.PlayerScreen
@@ -40,16 +39,6 @@ fun PineappleTVNavigation(
             )
         }
         
-        composable("directory_selection") {
-            DirectorySelectionScreen(
-                onDirectorySelected = {
-                    navController.navigate("main") {
-                        popUpTo("directory_selection") { inclusive = true }
-                    }
-                }
-            )
-        }
-        
         composable("main") {
             MainScreen(
                 onCollectionClick = { collectionId ->
@@ -62,7 +51,7 @@ fun PineappleTVNavigation(
                     navController.navigate("search")
                 },
                 onDirectorySelectionClick = {
-                    navController.navigate("directory_selection")
+
                 },
                 onSettingsClick = {
                     navController.navigate("collection_management")
