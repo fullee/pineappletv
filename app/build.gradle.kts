@@ -36,6 +36,18 @@ android {
             )
         }
     }
+
+    applicationVariants.all {
+        outputs.all {
+            val appName = "PineappleTV"
+            val versionName = versionName
+            val buildTypeName = buildType.name
+            val apkName = "$appName-v$versionName-$buildTypeName.apk"
+
+            // 设置输出文件名
+            (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl).outputFileName = apkName
+        }
+    }
     
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

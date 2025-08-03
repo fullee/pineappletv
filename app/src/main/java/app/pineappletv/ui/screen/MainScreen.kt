@@ -189,7 +189,7 @@ private fun RecentPlaybackCard(
     index: Int
 ) {
     var isFocused by remember { mutableStateOf(false) }
-    
+
     // 当卡片获得焦点时自动滚动
     LaunchedEffect(isFocused) {
         if (isFocused) {
@@ -201,7 +201,7 @@ private fun RecentPlaybackCard(
     Card(
         modifier = Modifier
             .width(300.dp)
-            .focusable()
+//            .focusable()
             .onFocusChanged { focusState ->
                 isFocused = focusState.isFocused
             }
@@ -272,7 +272,6 @@ private fun CollectionCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .focusable()
             .onFocusChanged { focusState ->
                 isFocused = focusState.isFocused
             }

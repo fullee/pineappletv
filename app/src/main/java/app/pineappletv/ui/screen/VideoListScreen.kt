@@ -123,7 +123,7 @@ private fun VideoCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .focusable()
+//            .focusable()
             .onFocusChanged { focusState ->
                 isFocused = focusState.isFocused
             }

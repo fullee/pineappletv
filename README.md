@@ -1,6 +1,11 @@
 # PineappleTV - Android TV 视频播放应用
 
-基于Android TV平台开发的本地视频播放应用，支持自动扫描、媒体库管理和播放历史记录。
+基于Android TV平台开发的本地视频播放应用，支持自动扫描、媒体库管理和播放历史记录, 自动创建合集。
+
+![LOGO](./docs/img/app_icon_your_company.png)
+
+## 功能演示
+![功能演示](./docs/img/0803.mp4)
 
 ## 技术栈
 
