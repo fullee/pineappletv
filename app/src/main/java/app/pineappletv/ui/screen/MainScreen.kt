@@ -29,6 +29,7 @@ fun MainScreen(
     onVideoClick: (Long) -> Unit,
     onSearchClick: () -> Unit,
     onDirectorySelectionClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
     viewModel: MainViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -89,8 +90,16 @@ fun MainScreen(
                     text = "PineappleTV",
                     style = MaterialTheme.typography.headlineLarge
                 )
-                Button(onClick = onSearchClick) {
-                    Text("搜索")
+                
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(onClick = onSearchClick) {
+                        Text("搜索")
+                    }
+                    Button(onClick = onSettingsClick) {
+                        Text("设置")
+                    }
                 }
             }
             

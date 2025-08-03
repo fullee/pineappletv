@@ -119,4 +119,47 @@ class VideoRepository(
     suspend fun deletePlaybackHistory(videoId: Long) = withContext(Dispatchers.IO) {
         database.playbackHistoryQueries.deletePlaybackHistory(videoId)
     }
+    
+    // 合集管理相关操作
+    suspend fun deleteCollection(collectionId: Long) = withContext(Dispatchers.IO) {
+        // 删除合集中的所有视频
+        database.videosQueries.deleteVideosByCollectionId(collectionId)
+        // 删除合集
+        database.collectionsQueries.deleteCollection(collectionId)
+    }
+    
+    suspend fun refreshCollection(collectionPath: String) = withContext(Dispatchers.IO) {
+        // 获取合集信息
+        val collection = database.collectionsQueries.getCollectionByPath(collectionPath).executeAsOneOrNull()
+        if (collection != null) {
+            // 删除该合集的所有视频
+            database.videosQueries.deleteVideosByCollectionId(collection.id)
+            
+            // 重新扫描目录
+            val collectionInfo = videoScanner.scanDirectory(collectionPath).firstOrNull { it.path == collectionPath }
+            if (collectionInfo != null) {
+                val currentTime = System.currentTimeMillis()
+                // 插入新扫描的视频
+                collectionInfo.videos.forEach { video ->
+                    database.videosQueries.insertVideo(
+                        collection_id = collection.id,
+                        name = video.name,
+                        file_path = video.path,
+                        cover_image = null,
+                        duration = video.duration,
+                        file_size = video.size,
+                        created_at = currentTime,
+                        updated_at = currentTime
+                    )
+                }
+                
+                // 更新合集的更新时间
+                database.collectionsQueries.updateCollectionCover(
+                    id = collection.id,
+                    cover_image = null,
+                    updated_at = currentTime
+                )
+            }
+        }
+    }
 }
