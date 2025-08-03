@@ -2,13 +2,12 @@
 
 基于Android TV平台开发的本地视频播放应用，支持自动扫描、媒体库管理和播放历史记录, 自动创建合集。
 
-<font color="red">有老板需要定制开发请私我</font>
+<font color="red">🟩有老板需要定制开发请私我</font>
 
 ![LOGO](./docs/img/app_icon_your_company.png)
 
 ## 功能演示
-![功能演示](./docs/img/0803.mp4)
-
+[点击查看B站视频](https://www.bilibili.com/video/BV1eXhGzWEZh/)
 ## 技术栈
 
 - **UI框架**: Jetpack Compose + Compose for TV
