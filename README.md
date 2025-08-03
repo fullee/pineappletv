@@ -2,6 +2,8 @@
 
 基于Android TV平台开发的本地视频播放应用，支持自动扫描、媒体库管理和播放历史记录, 自动创建合集。
 
+<font color="red">有老板需要定制开发请私我</font>
+
 ![LOGO](./docs/img/app_icon_your_company.png)
 
 ## 功能演示
@@ -136,7 +138,3 @@ app/src/main/java/app/pineappletv/
 - [ ] 支持更多视频格式
 - [ ] 添加播放列表管理
 - [ ] 支持多语言
-
-
-可以选择媒体文件夹创建合集
-自动连播
